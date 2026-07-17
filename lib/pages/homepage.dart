@@ -1,5 +1,6 @@
+import 'package:dart_flutter_course/db/db_helpter.dart';
+import 'package:dart_flutter_course/models/contact_model.dart';
 import 'package:flutter/material.dart';
-import 'package:dart_flutter_course/db/temp_db.dart';
 import 'package:dart_flutter_course/routes/router.dart';
 import 'package:dart_flutter_course/routes/routes.dart';
 import 'package:go_router/go_router.dart';
@@ -12,6 +13,17 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  List<ContactModel> contactList = [];
+
+  @override
+  void initState() {
+    super.initState();
+    Dbhelper().getAllContacts().then((value) {
+      contactList = value;
+      setState(() {});
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,7 +38,14 @@ class _HomePageState extends State<HomePage> {
             },
             title: Text(contact.contactName),
             trailing: IconButton(
-              onPressed: () {},
+              onPressed: () async {
+                final value = contact.favorite ? 0 : 1;
+                await Dbhelper().updateContactField(contact.id, {
+                  contactsColFavorite: value,
+                });
+                contactList = await Dbhelper().getAllContacts();
+                setState(() {});
+              },
               icon: Icon(
                 contact.favorite ? Icons.favorite : Icons.favorite_border,
               ),
@@ -36,10 +55,10 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          context.pushNamed(Routes.contactForm.name).then((_) {
-            setState(() {});
-          });
+        onPressed: () async {
+          await context.pushNamed(Routes.contactForm.name);
+          contactList = await Dbhelper().getAllContacts();
+          setState(() {});
         },
         child: Icon(Icons.add),
       ),

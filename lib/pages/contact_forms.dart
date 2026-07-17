@@ -1,5 +1,6 @@
-import 'package:dart_flutter_course/db/temp_db.dart';
+import 'package:dart_flutter_course/db/db_helpter.dart';
 import 'package:dart_flutter_course/models/contact_model.dart';
+import 'package:dart_flutter_course/utils/helper_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -23,7 +24,6 @@ class _ContactFormPageState extends State<ContactFormPage> {
   void _savecontact() {
     if (formKey.currentState!.validate()) {
       final contact = ContactModel(
-        id: contactList.length + 1,
         contactName: nameController.text,
         mobile: mobileController.text,
         address: addressController.text,
@@ -32,8 +32,17 @@ class _ContactFormPageState extends State<ContactFormPage> {
         designation: designationController.text,
         email: emailController.text,
       );
-      contactList.add(contact);
-      context.pop(context);
+      // contactList.add(contact);
+      Dbhelper()
+          .insert(contact)
+          .then((newRowID) {
+            if (newRowID > 0) {
+              context.pop(context);
+            }
+          })
+          .catchError((error) {
+            showMsg(context, "Failed to save.");
+          });
     }
   }
 
